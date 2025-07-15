@@ -3,6 +3,7 @@ Test for django models.
 """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from core import models
 
 
 class ModelTests(TestCase):
@@ -46,3 +47,20 @@ class ModelTests(TestCase):
         )
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_recipe_model_create(self):
+        user = get_user_model().objects.create(
+            email="test@1234",
+            password='testpass1234',
+            name='Test User',
+        )
+        price = 5.5
+        recipe = models.Recipe.objects.create(
+            user=user,
+            title='title',
+            description='description',
+            price=price,
+            link='a/b/c',
+            time_minutes=5,
+        )
+        self.assertEqual(recipe.price, price)
