@@ -8,6 +8,7 @@ from recipe.serializers import RecipeSerializer
 
 RECIPES_URL = reverse('recipe:recipe-list')
 
+
 def create_recipe(user, **kwargs):
     defaults = {
         'title': 'sameple title',
