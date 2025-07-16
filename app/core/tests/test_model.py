@@ -6,6 +6,15 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
+def create_user(*args, **kwargs):
+    if not args and not kwargs:
+        kwargs = {
+            'email': 'test@example.com',
+            'password': 'pass1234'
+        }
+    return get_user_model().objects.create_user(*args, **kwargs)
+
+
 class ModelTests(TestCase):
     """Test models."""
 
@@ -13,7 +22,7 @@ class ModelTests(TestCase):
         """Test creating a suer with an email is successful."""
         email = 'test@example.com'
         password = 'testpassword123'
-        user = get_user_model().objects.create_user(
+        user = create_user(
             email=email,
             password=password
         )
@@ -28,7 +37,7 @@ class ModelTests(TestCase):
         ]
 
         for email, normEmail in test_emails:
-            user = get_user_model().objects.create_user(
+            user = create_user(
                 email=email,
                 password="test@123"
             )
@@ -36,7 +45,7 @@ class ModelTests(TestCase):
 
     def test_create_user_empty_email_raises_value_error(self):
         """Check if empty emails raises value error"""
-        test_func = get_user_model().objects.create_user
+        test_func = create_user
         self.assertRaises(ValueError, test_func, "", "pass@1234")
 
     def test_create_super_user(self):
@@ -49,7 +58,7 @@ class ModelTests(TestCase):
         self.assertTrue(user.is_staff)
 
     def test_recipe_model_create(self):
-        user = get_user_model().objects.create(
+        user = create_user(
             email="test@1234",
             password='testpass1234',
             name='Test User',
@@ -64,3 +73,8 @@ class ModelTests(TestCase):
             time_minutes=5,
         )
         self.assertEqual(recipe.price, price)
+
+    def test_create_tag(self):
+        user = create_user()
+        tag = models.Tag.objects.create(user=user, name='Tag1')
+        self.assertEqual(str(tag), tag.name)
