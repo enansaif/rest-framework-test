@@ -29,6 +29,10 @@ def create_recipe(user, **kwargs):
     return recipe
 
 
+def create_user(**kwargs):
+    return get_user_model().objects.create_user(**kwargs)
+
+
 class PublicRecipeAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -41,7 +45,7 @@ class PublicRecipeAPITests(TestCase):
 class PrivateRecipeAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
+        self.user = create_user(
             email='user@example.com',
             password='test1234',
         )
@@ -57,7 +61,7 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_recipe_list_limited_to_user(self):
-        other_user = get_user_model().objects.create_user(
+        other_user = create_user(
             email='test@example.com',
             password='abc123',
         )
@@ -90,4 +94,32 @@ class PrivateRecipeAPITests(TestCase):
         recipe = Recipe.objects.get(id=res.data['id'])
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
+        self.assertEqual(recipe.user, self.user)
+
+    def test_partial_update(self):
+        original_link = 'https://example.com/recipe.pdf'
+        recipe = create_recipe(
+            user=self.user,
+            title='sample title',
+            link=original_link,
+        )
+        payload = {'title': 'new recipe title'}
+        url = detail_url(recipe.id)
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.title, payload['title'])
+        self.assertEqual(recipe.link, original_link)
+        self.assertEqual(recipe.user, self.user)
+
+    def test_update_user_returns_error(self):
+        new_user = create_user(
+            email='user2@example.com',
+            password='test123'
+        )
+        recipe = create_recipe(user=self.user)
+        payload = {'user': new_user.id}
+        url = detail_url(recipe.id)
+        self.client.patch(url, payload)
+        recipe.refresh_from_db()
         self.assertEqual(recipe.user, self.user)
