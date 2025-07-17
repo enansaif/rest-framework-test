@@ -24,31 +24,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class TagViewSet(
+class BaseRecipeAttrViewSet(
         mixins.DestroyModelMixin,
         mixins.ListModelMixin,
         mixins.UpdateModelMixin,
-        viewsets.GenericViewSet,
+        viewsets.GenericViewSet
         ):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+
+class TagViewSet(BaseRecipeAttrViewSet):
     serializer_class = serializers.TagSerializer
     queryset = Tag.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user).order_by('-name')
 
 
-class IngredientsViewSet(
-        mixins.ListModelMixin,
-        mixins.DestroyModelMixin,
-        mixins.UpdateModelMixin,
-        viewsets.GenericViewSet,
-        ):
+class IngredientsViewSet(BaseRecipeAttrViewSet):
     serializer_class = serializers.IngredientSerializer
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
     queryset = Ingredients.objects.all()
-
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user).order_by('-name')

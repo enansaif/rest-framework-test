@@ -179,3 +179,30 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         new_tag = Tag.objects.get(user=self.user, name='Lunch')
         self.assertIn(new_tag, recipe.tags.all())
+
+    def test_create_ingredients(self):
+        payload = {
+            'title': 'Curry',
+            'time_minutes': 60,
+            'price': 10.00,
+            'tags': [
+                {'name': 'Indian'},
+                {'name': 'Breakfast'},
+            ],
+            'ingredients': [
+                {'name': 'Onion'},
+                {'name': 'Rice'},
+            ]
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+        recipe = recipes[0]
+        self.assertEqual(recipe.ingredients.count(), 2)
+        for ingredient in payload['ingredients']:
+            exists = recipe.ingredients.filter(
+                name=ingredient['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
