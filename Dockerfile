@@ -32,8 +32,8 @@ RUN python -m venv /py && \
     apk del .tmp-build-deps && \
     # Create a system user for running the Django app
     adduser --disabled-password --no-create-home django-user && \
-    mkdir -p vol/web/media && \
-    mkdir -p vol/web/static && \
+    mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static && \
     chown -R django-user:django-user /vol && \
     chmod -R 755 /vol
 
