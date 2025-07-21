@@ -13,12 +13,14 @@ RUN python -m venv /py && \
     # Upgrade pip
     /py/bin/pip install --upgrade pip && \
     # Install runtime dependencies
-    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache postgresql-client jpeg-dev && \
     # Install build dependencies
     apk add --update --no-cache --virtual .tmp-build-deps \
         build-base \
         postgresql-dev \
-        musl-dev && \
+        musl-dev \
+        zlib \
+        zlib-dev && \
     # Install Python packages
     /py/bin/pip install -r /tmp/requirements.txt && \
     # Install dev dependencies if DEV is true
@@ -29,7 +31,11 @@ RUN python -m venv /py && \
     rm -rf /tmp && \
     apk del .tmp-build-deps && \
     # Create a system user for running the Django app
-    adduser --disabled-password --no-create-home django-user
+    adduser --disabled-password --no-create-home django-user && \
+    mkdir -p vol/web/media && \
+    mkdir -p vol/web/static && \
+    chown -R django-user:django-user /vol && \
+    chmod -R 755 /vol
 
 ENV PATH="/py/bin:$PATH"
 USER django-user
