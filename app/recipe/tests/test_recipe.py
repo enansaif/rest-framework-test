@@ -235,7 +235,7 @@ class ImageUploadTests(TestCase):
             img.save(image_file, format='JPEG')
             image_file.seek(0)
             payload = {
-                'image', image_file
+                'image': image_file,
             }
             res = self.client.post(url, payload, format='multipart')
 
@@ -249,4 +249,3 @@ class ImageUploadTests(TestCase):
         payload = {'image': 'image'}
         res = self.client.post(url, payload, format='multipart')
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
